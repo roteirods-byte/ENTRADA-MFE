@@ -1,8 +1,7 @@
 // server.js
 // Servidor do Painel MFE Posicional
 // - Serve o index.html
-// - Rota GET /api/mfe lendo o entrada.json real (POSICIONAL)
-//   e convertendo para o formato do painel.
+// - GET /api/mfe: lê o POSICIONAL de entrada.json e monta os campos do painel
 
 const express = require("express");
 const path = require("path");
@@ -11,11 +10,11 @@ const fs = require("fs");
 const app = express();
 const PORT = process.env.PORT || 8082;
 
-// Caminho do JSON já gerado pela automação antiga (blindada)
+// Caminho do JSON já gerado pela automação (painel antigo, blindado)
 const ENTRADA_PATH =
   "/home/roteiro_ds/autotrader-planilhas-python/data/entrada.json";
 
-// ---------- DADOS DE EXEMPLO (fallback) ----------
+// ---------- DADOS DE EXEMPLO (apenas se der erro) ----------
 const dadosExemplo = [
   {
     par: "BTC",
@@ -41,54 +40,9 @@ const dadosExemplo = [
     data: "2025-12-03",
     hora: "19:05",
   },
-  {
-    par: "ADA",
-    side: "SHORT",
-    preco: 0.62,
-    alvo: 0.582,
-    ganho_pct: 6.1,
-    zona: "VERDE",
-    risco: "MÉDIO",
-    prioridade: "ALTA",
-    data: "2025-12-03",
-    hora: "19:05",
-  },
-  {
-    par: "ICP",
-    side: "LONG",
-    preco: 15.8,
-    alvo: 17.9,
-    ganho_pct: 13.3,
-    zona: "VERMELHA",
-    risco: "ALTO",
-    prioridade: "MÉDIA",
-    data: "2025-12-03",
-    hora: "19:05",
-  },
-  {
-    par: "FLUX",
-    side: "NAO_ENTRAR",
-    preco: 0.95,
-    alvo: 0.0,
-    ganho_pct: 0.0,
-    zona: "-",
-    risco: "ALTO",
-    prioridade: "NÃO OPERAR",
-    data: "2025-12-03",
-    hora: "19:05",
-  },
 ];
 
 // ---------- CLASSIFICAÇÕES AUXILIARES ----------
-
-// Universo alvo (50 moedas) – pode ser ajustado depois no backend
-const UNIVERSO_50 = [
-  "AAVE", "ADA", "APE", "APT", "ARB", "ATOM", "AVAX", "AXS", "BCH", "BNB",
-  "BTC", "CHZ", "DOGE", "DOT", "ETH", "FET", "FIL", "FLUX", "FTM", "GALA",
-  "GRT", "ICP", "INJ", "LDO", "LINK", "LTC", "MANA", "NEAR", "OP", "PEPE",
-  "POL", "RNDR", "RUNE", "SAND", "SEI", "SHIB", "SOL", "STX", "SUI",
-  "TIA", "TNSR", "TON", "TRX", "UNI", "WIF", "XLM", "XRP", "ZEC",
-];
 
 const RISCO_BAIXO = new Set([
   "BTC", "ETH", "BNB", "XRP", "ADA", "SOL", "TRX", "LTC",
@@ -108,9 +62,9 @@ function classificarRisco(par) {
 
 function classificarZona(ganho) {
   if (ganho <= 0) return "-";
-  if (ganho < 3) return "AMARELA"; // pouco ganho
-  if (ganho <= 8) return "VERDE"; // zona ideal
-  return "VERMELHA"; // muito agressivo
+  if (ganho < 3) return "AMARELA";   // pouco ganho
+  if (ganho <= 8) return "VERDE";    // zona ideal
+  return "VERMELHA";                 // muito agressivo
 }
 
 function classificarPrioridade(side, ganho, risco, assertPct) {
@@ -128,7 +82,6 @@ function classificarPrioridade(side, ganho, risco, assertPct) {
     prioridade = "ALTA";
   }
 
-  // Se assertividade vier baixa, derruba prioridade
   if (typeof assertPct === "number" && assertPct < 65) {
     prioridade = "BAIXA";
   }
@@ -136,7 +89,7 @@ function classificarPrioridade(side, ganho, risco, assertPct) {
   return prioridade;
 }
 
-// Monta dados do painel a partir do entrada.json POSICIONAL
+// Lê o POSICIONAL do entrada.json e monta a lista para o painel
 function montarPainelAPartirDeEntrada() {
   if (!fs.existsSync(ENTRADA_PATH)) {
     return null;
@@ -148,14 +101,8 @@ function montarPainelAPartirDeEntrada() {
   // Estrutura esperada: { swing: [...], posicional: [...], ultima_atualizacao: "..." }
   const listaPosicional = Array.isArray(json.posicional) ? json.posicional : [];
 
-  const saida = [];
-
-  // Garante ordem pelo universo alvo (quando estiver completo com as 50)
-  for (const par of UNIVERSO_50) {
-    const item = listaPosicional.find((x) => x.par === par);
-    if (!item) continue;
-
-        const risco = classificarRisco(item.par);
+  const saida = listaPosicional.map((item) => {
+    const risco = classificarRisco(item.par);
     const zona = classificarZona(item.ganho_pct || 0);
     const prioridade = classificarPrioridade(
       item.side,
@@ -164,47 +111,19 @@ function montarPainelAPartirDeEntrada() {
       item.assert_pct
     );
 
-    saida.push({
+    return {
       par: item.par,
       side: item.side,
       preco: item.preco,
-      alvo: item.alvo, // já vem da automação MFE de entrada
+      alvo: item.alvo,
       ganho_pct: item.ganho_pct,
       zona,
       risco,
       prioridade,
       data: item.data,
       hora: item.hora,
-    });
-  }
-
-  // Se por algum motivo o universo de 50 ainda não estiver completo,
-  // inclui qualquer moeda extra que tenha sinal POSICIONAL
-    for (const item of listaPosicional) {
-    if (!UNIVERSO_50.includes(item.par)) {
-      const risco = classificarRisco(item.par);
-      const zona = classificarZona(item.ganho_pct || 0);
-      const prioridade = classificarPrioridade(
-        item.side,
-        item.ganho_pct || 0,
-        risco,
-        item.assert_pct
-      );
-
-      saida.push({
-        par: item.par,
-        side: item.side,
-        preco: item.preco,
-        alvo: item.alvo,
-        ganho_pct: item.ganho_pct,
-        zona,
-        risco,
-        prioridade,
-        data: item.data,
-        hora: item.hora,
-      });
-    }
-  }
+    };
+  });
 
   return {
     registros: saida,
@@ -212,10 +131,8 @@ function montarPainelAPartirDeEntrada() {
   };
 }
 
-// ---------- MIDDLEWARES BÁSICOS ----------
+// ---------- MIDDLEWARES ----------
 app.use(express.json());
-
-// Servir arquivos estáticos da raiz (index.html)
 const publicDir = path.join(__dirname);
 app.use(express.static(publicDir));
 
