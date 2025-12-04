@@ -155,10 +155,7 @@ function montarPainelAPartirDeEntrada() {
     const item = listaPosicional.find((x) => x.par === par);
     if (!item) continue;
 
-    // Esconde NAO_ENTRAR – só LONG/SHORT aparecem no painel
-    if (item.side === "NAO_ENTRAR") continue;
-
-    const risco = classificarRisco(item.par);
+        const risco = classificarRisco(item.par);
     const zona = classificarZona(item.ganho_pct || 0);
     const prioridade = classificarPrioridade(
       item.side,
@@ -183,11 +180,8 @@ function montarPainelAPartirDeEntrada() {
 
   // Se por algum motivo o universo de 50 ainda não estiver completo,
   // inclui qualquer moeda extra que tenha sinal POSICIONAL
-  for (const item of listaPosicional) {
-    if (
-      !UNIVERSO_50.includes(item.par) &&
-      item.side !== "NAO_ENTRAR"
-    ) {
+    for (const item of listaPosicional) {
+    if (!UNIVERSO_50.includes(item.par)) {
       const risco = classificarRisco(item.par);
       const zona = classificarZona(item.ganho_pct || 0);
       const prioridade = classificarPrioridade(
