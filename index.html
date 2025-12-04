@@ -145,12 +145,10 @@
       color: var(--green);
       font-weight: 600;
     }
-
     .side-short {
       color: var(--red);
       font-weight: 600;
     }
-
     .side-nenhum {
       color: #7f8c8d;
       font-weight: 500;
@@ -160,12 +158,10 @@
       color: var(--green);
       font-weight: 600;
     }
-
     .zona-amarela {
       color: var(--yellow);
       font-weight: 600;
     }
-
     .zona-vermelha {
       color: var(--red);
       font-weight: 600;
@@ -174,11 +170,9 @@
     .risco-baixo {
       color: var(--green);
     }
-
     .risco-medio {
       color: var(--yellow);
     }
-
     .risco-alto {
       color: var(--red);
     }
@@ -187,17 +181,14 @@
       font-weight: 700;
       color: var(--green);
     }
-
     .prior-media {
       font-weight: 600;
       color: var(--yellow);
     }
-
     .prior-baixa {
       font-weight: 500;
       color: #95a5a6;
     }
-
     .prior-nao {
       font-weight: 600;
       color: var(--red);
@@ -225,13 +216,13 @@
       PAR · SIDE · PREÇO · ALVO · GANHO % · ZONA · RISCO · PRIORIDADE · DATA · HORA
     </div>
     <div class="subtitle-small">
-      Este painel lê os dados POSICIONAL da automação (entrada.json) e mostra todas as moedas, incluindo NAO_ENTRAR.
+      Lendo diretamente o modo POSICIONAL (1D) do arquivo <strong>entrada.json</strong>.
     </div>
 
     <div class="card">
       <div class="top-bar">
         <div class="top-bar-left">
-          Modo: <strong>POSICIONAL (1D)</strong> · Atualização a cada <strong>5 minutos</strong>
+          Modo: <strong>POSICIONAL (1D)</strong> · Atualização automática a cada <strong>60 segundos</strong> (teste)
         </div>
         <div class="badge" id="status-badge">
           <span class="badge-dot"></span>
@@ -255,9 +246,7 @@
               <th class="col-hora">HORA</th>
             </tr>
           </thead>
-          <tbody id="tabela-mfe">
-            <!-- linhas criadas via JS -->
-          </tbody>
+          <tbody id="tabela-mfe"></tbody>
         </table>
       </div>
 
@@ -272,6 +261,7 @@
     function classeSide(side) {
       if (side === "LONG") return "side-long";
       if (side === "SHORT") return "side-short";
+      if (side === "NAO_ENTRAR" || side === "NAO ENTRAR") return "side-nenhum";
       return "side-nenhum";
     }
 
@@ -311,7 +301,7 @@
       const el = document.getElementById("info-contagem");
       if (!el) return;
       el.textContent =
-        `Universo calculado (POSICIONAL): ${totalUniverso} moedas · ` +
+        `Universo POSICIONAL: ${totalUniverso} moedas · ` +
         `Com sinal (LONG/SHORT): ${totalComSinal}`;
     }
 
@@ -319,12 +309,7 @@
       const tbody = document.getElementById("tabela-mfe");
       tbody.innerHTML = "";
 
-      const totalUniverso = dadosBrutos.length;
-      const totalComSinal = dadosBrutos.filter(
-        (linha) => linha.side === "LONG" || linha.side === "SHORT"
-      ).length;
-
-      if (!dadosBrutos || dadosBrutos.length === 0) {
+      if (!Array.isArray(dadosBrutos) || dadosBrutos.length === 0) {
         const tr = document.createElement("tr");
         tr.innerHTML =
           `<td colspan="10" style="padding:12px; font-size:12px; color:#c8d6e5;">` +
@@ -334,6 +319,11 @@
         atualizarContagem(0, 0);
         return;
       }
+
+      const totalUniverso = dadosBrutos.length;
+      const totalComSinal = dadosBrutos.filter(
+        (linha) => linha.side === "LONG" || linha.side === "SHORT"
+      ).length;
 
       dadosBrutos.forEach((linha) => {
         const tr = document.createElement("tr");
@@ -370,42 +360,39 @@
         atualizarStatus("Lendo /api/mfe ...");
 
         const resp = await fetch("/api/mfe", { cache: "no-store" });
-
-        if (!resp.ok) {
-          throw new Error("Resposta inválida da API /api/mfe");
-        }
+        if (!resp.ok) throw new Error("Resposta inválida da API /api/mfe");
 
         const dados = await resp.json();
+        popularTabela(dados || []);
 
-        if (!Array.isArray(dados) || dados.length === 0) {
-          throw new Error("API /api/mfe retornou vazio");
+        if (Array.isArray(dados) && dados.length > 0) {
+          let ultimaData = dados[0].data;
+          let ultimaHora = dados[0].hora;
+          dados.forEach((linha) => {
+            if (linha.data > ultimaData ||
+               (linha.data === ultimaData && linha.hora > ultimaHora)) {
+              ultimaData = linha.data;
+              ultimaHora = linha.hora;
+            }
+          });
+          nota.textContent =
+            `Atualizado via /api/mfe · Último registro: ${ultimaData} ${ultimaHora} (dados da automação)`;
+          atualizarStatus("Automação conectada");
+        } else {
+          nota.textContent =
+            "Nenhum dado POSICIONAL recebido. Verifique o arquivo entrada.json.";
+          atualizarStatus("Sem dados");
         }
-
-        popularTabela(dados);
-
-        // última data/hora
-        let ultimaData = dados[0].data;
-        let ultimaHora = dados[0].hora;
-        dados.forEach((linha) => {
-          if (linha.data > ultimaData || (linha.data === ultimaData && linha.hora > ultimaHora)) {
-            ultimaData = linha.data;
-            ultimaHora = linha.hora;
-          }
-        });
-
-        nota.textContent =
-          `Atualizado via /api/mfe · Último registro: ${ultimaData} ${ultimaHora} (dados da automação)`;
-        atualizarStatus("Automação conectada");
       } catch (e) {
         console.error(e);
         nota.textContent =
-          "Falha ao ler /api/mfe. Verifique se o arquivo entrada.json está sendo gerado.";
+          "Falha ao ler /api/mfe. Verifique se o servidor está rodando.";
         atualizarStatus("Erro ao ler automação");
       }
     }
 
     carregarDados();
-    setInterval(carregarDados, 300000); // 5 minutos
+    setInterval(carregarDados, 60000); // 60s para teste
   </script>
 </body>
 </html>
