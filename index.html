@@ -2,397 +2,262 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <title>Painel MFE Posicional – Autotrader</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Painel MFE Posicional – Decisão de Entradas</title>
   <style>
-    :root {
-      --bg: #021528;
-      --card-bg: #031c33;
-      --header: #ff9b3c;
-      --text: #ffffff;
-      --green: #2ecc71;
-      --red: #e74c3c;
-      --yellow: #f1c40f;
-      --border: #244161;
-      --row-alt: #041f3a;
-    }
-
-    * {
-      box-sizing: border-box;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    }
-
     body {
       margin: 0;
-      padding: 0;
-      background: var(--bg);
-      color: var(--text);
+      font-family: Arial, sans-serif;
+      background-color: #001826;
+      color: #ffffff;
     }
-
-    .container {
-      max-width: 1280px;
-      margin: 0 auto;
-      padding: 24px 16px 40px;
-    }
-
-    .title {
-      font-size: 24px;
-      font-weight: 700;
-      color: var(--header);
-      margin-bottom: 8px;
+    header {
       text-align: center;
+      padding: 24px 0 8px 0;
+      color: #ff9b32;
+      font-size: 26px;
+      font-weight: bold;
     }
-
-    .subtitle {
-      font-size: 13px;
-      color: #c8d6e5;
+    .subtitulo {
       text-align: center;
+      color: #cccccc;
+      font-size: 12px;
       margin-bottom: 4px;
     }
-
-    .subtitle-small {
-      font-size: 11px;
-      color: #a5b1c2;
+    .info {
       text-align: center;
+      color: #cccccc;
+      font-size: 11px;
       margin-bottom: 20px;
     }
-
-    .card {
-      background: var(--card-bg);
-      border-radius: 12px;
-      padding: 16px;
-      border: 1px solid var(--border);
-      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+    .container {
+      max-width: 980px;
+      margin: 0 auto 40px auto;
+      background-color: #032235;
+      border-radius: 10px;
+      box-shadow: 0 0 8px rgba(0,0,0,0.6);
+      padding: 12px 16px 20px 16px;
     }
-
     .top-bar {
       display: flex;
-      flex-wrap: wrap;
-      align-items: center;
       justify-content: space-between;
-      gap: 8px;
-      margin-bottom: 10px;
-    }
-
-    .top-bar-left {
-      font-size: 13px;
-      color: #a5b1c2;
-    }
-
-    .badge {
-      display: inline-flex;
       align-items: center;
-      gap: 4px;
+      font-size: 12px;
+      color: #e0e0e0;
+      margin-bottom: 8px;
+    }
+    .badge-online {
       padding: 2px 8px;
       border-radius: 999px;
+      background-color: #004d26;
+      color: #a6ffb0;
       font-size: 11px;
-      border: 1px solid var(--border);
-      background: rgba(0, 0, 0, 0.3);
     }
-
-    .badge-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 999px;
-      background: var(--green);
-    }
-
-    .table-wrapper {
-      overflow-x: auto;
-      border-radius: 8px;
-      border: 1px solid var(--border);
-    }
-
     table {
       width: 100%;
       border-collapse: collapse;
-      min-width: 900px;
       font-size: 12px;
     }
-
     thead {
-      background: #052546;
+      background-color: #052a3f;
     }
-
     th, td {
-      padding: 8px 10px;
+      padding: 6px 8px;
       text-align: center;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     }
-
     th {
-      font-weight: 600;
-      color: var(--header);
-      white-space: nowrap;
+      color: #ff9b32;
+      font-weight: bold;
+      border-bottom: 1px solid #18445d;
     }
-
     tbody tr:nth-child(even) {
-      background: var(--row-alt);
+      background-color: #041f31;
     }
-
-    .col-par { width: 70px; }
-    .col-side { width: 80px; }
-    .col-preco { width: 90px; }
-    .col-alvo { width: 90px; }
-    .col-ganho { width: 80px; }
-    .col-zona { width: 90px; }
-    .col-risco { width: 90px; }
-    .col-prior { width: 110px; }
-    .col-data { width: 90px; }
-    .col-hora { width: 70px; }
-
-    .side-long {
-      color: var(--green);
-      font-weight: 600;
+    tbody tr:nth-child(odd) {
+      background-color: #032235;
     }
-    .side-short {
-      color: var(--red);
-      font-weight: 600;
+    .verde {
+      color: #00ff7f;
+      font-weight: bold;
     }
-    .side-nenhum {
-      color: #7f8c8d;
-      font-weight: 500;
+    .vermelho {
+      color: #ff4d4d;
+      font-weight: bold;
     }
-
-    .zona-verde {
-      color: var(--green);
-      font-weight: 600;
+    .amarelo {
+      color: #ffd966;
+      font-weight: bold;
     }
-    .zona-amarela {
-      color: var(--yellow);
-      font-weight: 600;
+    .cinza {
+      color: #c0c0c0;
     }
-    .zona-vermelha {
-      color: var(--red);
-      font-weight: 600;
-    }
-
-    .risco-baixo {
-      color: var(--green);
-    }
-    .risco-medio {
-      color: var(--yellow);
-    }
-    .risco-alto {
-      color: var(--red);
-    }
-
-    .prior-alta {
-      font-weight: 700;
-      color: var(--green);
-    }
-    .prior-media {
-      font-weight: 600;
-      color: var(--yellow);
-    }
-    .prior-baixa {
-      font-weight: 500;
-      color: #95a5a6;
-    }
-    .prior-nao {
-      font-weight: 600;
-      color: var(--red);
-    }
-
-    .footer-note {
-      margin-top: 10px;
-      font-size: 11px;
-      color: #8395a7;
+    .rodape-info {
+      margin-top: 6px;
       text-align: right;
-    }
-
-    .info-left {
-      margin-top: 10px;
       font-size: 11px;
-      color: #8395a7;
-      text-align: left;
+      color: #b0b0b0;
     }
   </style>
 </head>
 <body>
+  <header> Painel MFE Posicional – Decisão de Entradas </header>
+
+  <div class="subtitulo">
+    PAR · SIDE · PREÇO · ALVO · GANHO % · ZONA · RISCO · PRIORIDADE · DATA · HORA
+  </div>
+  <div class="info">
+    Modo: POSICIONAL (1D) · Atualização automática a cada 60 segundos (teste)<br/>
+    Este painel mostra apenas moedas COM SINAL (LONG ou SHORT) gerado pelo MFE.
+  </div>
+
   <div class="container">
-    <div class="title">Painel MFE Posicional – Decisão de Entradas</div>
-    <div class="subtitle">
-      PAR · SIDE · PREÇO · ALVO · GANHO % · ZONA · RISCO · PRIORIDADE · DATA · HORA
-    </div>
-    <div class="subtitle-small">
-      Lendo diretamente o modo POSICIONAL (1D) do arquivo <strong>entrada.json</strong>.
+    <div class="top-bar">
+      <div>Fonte: entrada.json (modo POSICIONAL do Autotrader)</div>
+      <div class="badge-online" id="status-api">• Automação conectada</div>
     </div>
 
-    <div class="card">
-      <div class="top-bar">
-        <div class="top-bar-left">
-          Modo: <strong>POSICIONAL (1D)</strong> · Atualização automática a cada <strong>60 segundos</strong> (teste)
-        </div>
-        <div class="badge" id="status-badge">
-          <span class="badge-dot"></span>
-          <span>Carregando dados...</span>
-        </div>
-      </div>
+    <table>
+      <thead>
+        <tr>
+          <th>PAR</th>
+          <th>SIDE</th>
+          <th>PREÇO</th>
+          <th>ALVO</th>
+          <th>GANHO %</th>
+          <th>ZONA</th>
+          <th>RISCO</th>
+          <th>PRIORIDADE</th>
+          <th>DATA</th>
+          <th>HORA</th>
+        </tr>
+      </thead>
+      <tbody id="tabela-posicional">
+        <tr>
+          <td colspan="10" class="cinza">Carregando dados...</td>
+        </tr>
+      </tbody>
+    </table>
 
-      <div class="table-wrapper">
-        <table>
-          <thead>
-            <tr>
-              <th class="col-par">PAR</th>
-              <th class="col-side">SIDE</th>
-              <th class="col-preco">PREÇO</th>
-              <th class="col-alvo">ALVO</th>
-              <th class="col-ganho">GANHO %</th>
-              <th class="col-zona">ZONA</th>
-              <th class="col-risco">RISCO</th>
-              <th class="col-prior">PRIORIDADE</th>
-              <th class="col-data">DATA</th>
-              <th class="col-hora">HORA</th>
-            </tr>
-          </thead>
-          <tbody id="tabela-mfe"></tbody>
-        </table>
-      </div>
-
-      <div class="info-left" id="info-contagem"></div>
-      <div class="footer-note" id="ultima-atualizacao">
-        Aguardando primeira atualização...
-      </div>
+    <div class="rodape-info" id="info-atualizacao">
+      Aguardando primeira atualização...
     </div>
   </div>
 
   <script>
-    function classeSide(side) {
-      if (side === "LONG") return "side-long";
-      if (side === "SHORT") return "side-short";
-      if (side === "NAO_ENTRAR" || side === "NAO ENTRAR") return "side-nenhum";
-      return "side-nenhum";
-    }
+    async function carregarPainel() {
+      const corpo = document.getElementById("tabela-posicional");
+      const info = document.getElementById("info-atualizacao");
+      const statusApi = document.getElementById("status-api");
 
-    function classeZona(zona) {
-      if (zona === "VERDE") return "zona-verde";
-      if (zona === "AMARELA") return "zona-amarela";
-      if (zona === "VERMELHA") return "zona-vermelha";
-      return "";
-    }
-
-    function classeRisco(risco) {
-      if (risco === "BAIXO") return "risco-baixo";
-      if (risco === "MÉDIO" || risco === "MEDIO") return "risco-medio";
-      if (risco === "ALTO") return "risco-alto";
-      return "";
-    }
-
-    function classePrioridade(prioridade) {
-      if (prioridade === "ALTA") return "prior-alta";
-      if (prioridade === "MÉDIA" || prioridade === "MEDIA") return "prior-media";
-      if (prioridade === "BAIXA") return "prior-baixa";
-      if (prioridade === "NÃO OPERAR" || prioridade === "NAO OPERAR") return "prior-nao";
-      return "";
-    }
-
-    function formatPreco(v) {
-      if (typeof v !== "number") return "-";
-      return v.toFixed(3);
-    }
-
-    function formatGanho(v) {
-      if (typeof v !== "number") return "0.00 %";
-      return v.toFixed(2) + " %";
-    }
-
-    function atualizarContagem(totalUniverso, totalComSinal) {
-      const el = document.getElementById("info-contagem");
-      if (!el) return;
-      el.textContent =
-        `Universo POSICIONAL: ${totalUniverso} moedas · ` +
-        `Com sinal (LONG/SHORT): ${totalComSinal}`;
-    }
-
-    function popularTabela(dadosBrutos) {
-      const tbody = document.getElementById("tabela-mfe");
-      tbody.innerHTML = "";
-
-      if (!Array.isArray(dadosBrutos) || dadosBrutos.length === 0) {
-        const tr = document.createElement("tr");
-        tr.innerHTML =
-          `<td colspan="10" style="padding:12px; font-size:12px; color:#c8d6e5;">` +
-          `Nenhum registro POSICIONAL recebido da automação.` +
-          `</td>`;
-        tbody.appendChild(tr);
-        atualizarContagem(0, 0);
-        return;
-      }
-
-      const totalUniverso = dadosBrutos.length;
-      const totalComSinal = dadosBrutos.filter(
-        (linha) => linha.side === "LONG" || linha.side === "SHORT"
-      ).length;
-
-      dadosBrutos.forEach((linha) => {
-        const tr = document.createElement("tr");
-
-        tr.innerHTML = `
-          <td class="col-par">${linha.par}</td>
-          <td class="col-side ${classeSide(linha.side)}">${linha.side}</td>
-          <td class="col-preco">${formatPreco(linha.preco)}</td>
-          <td class="col-alvo">${linha.alvo > 0 ? formatPreco(linha.alvo) : "-"}</td>
-          <td class="col-ganho">${formatGanho(linha.ganho_pct)}</td>
-          <td class="col-zona ${classeZona(linha.zona)}">${linha.zona}</td>
-          <td class="col-risco ${classeRisco(linha.risco)}">${linha.risco}</td>
-          <td class="col-prior ${classePrioridade(linha.prioridade)}">${linha.prioridade}</td>
-          <td class="col-data">${linha.data}</td>
-          <td class="col-hora">${linha.hora}</td>
-        `;
-
-        tbody.appendChild(tr);
-      });
-
-      atualizarContagem(totalUniverso, totalComSinal);
-    }
-
-    function atualizarStatus(mensagem) {
-      const badge = document.getElementById("status-badge");
-      if (!badge) return;
-      const spanTexto = badge.querySelector("span:last-child");
-      if (spanTexto) spanTexto.textContent = mensagem;
-    }
-
-    async function carregarDados() {
-      const nota = document.getElementById("ultima-atualizacao");
       try {
-        atualizarStatus("Lendo /api/mfe ...");
-
-        const resp = await fetch("/api/mfe", { cache: "no-store" });
-        if (!resp.ok) throw new Error("Resposta inválida da API /api/mfe");
-
-        const dados = await resp.json();
-        popularTabela(dados || []);
-
-        if (Array.isArray(dados) && dados.length > 0) {
-          let ultimaData = dados[0].data;
-          let ultimaHora = dados[0].hora;
-          dados.forEach((linha) => {
-            if (linha.data > ultimaData ||
-               (linha.data === ultimaData && linha.hora > ultimaHora)) {
-              ultimaData = linha.data;
-              ultimaHora = linha.hora;
-            }
-          });
-          nota.textContent =
-            `Atualizado via /api/mfe · Último registro: ${ultimaData} ${ultimaHora} (dados da automação)`;
-          atualizarStatus("Automação conectada");
-        } else {
-          nota.textContent =
-            "Nenhum dado POSICIONAL recebido. Verifique o arquivo entrada.json.";
-          atualizarStatus("Sem dados");
+        const resp = await fetch("/api/mfe?ts=" + Date.now());
+        if (!resp.ok) {
+          throw new Error("HTTP " + resp.status);
         }
+        const data = await resp.json();
+
+        const lista = data.posicional || [];
+        const ultima = data.ultima_atualizacao || "";
+
+        corpo.innerHTML = "";
+
+        if (lista.length === 0) {
+          const tr = document.createElement("tr");
+          const td = document.createElement("td");
+          td.colSpan = 10;
+          td.className = "cinza";
+          td.textContent = "Nenhuma moeda com sinal LONG/SHORT neste ciclo. Aguardando próxima atualização...";
+          tr.appendChild(td);
+          corpo.appendChild(tr);
+        } else {
+          lista.forEach(item => {
+            const tr = document.createElement("tr");
+
+            const tdPar = document.createElement("td");
+            tdPar.textContent = item.par || "-";
+            tr.appendChild(tdPar);
+
+            const tdSide = document.createElement("td");
+            tdSide.textContent = item.side || "-";
+            if (item.side === "LONG") tdSide.className = "verde";
+            else if (item.side === "SHORT") tdSide.className = "vermelho";
+            tr.appendChild(tdSide);
+
+            const tdPreco = document.createElement("td");
+            tdPreco.textContent = (item.preco ?? 0).toFixed(3);
+            tr.appendChild(tdPreco);
+
+            const tdAlvo = document.createElement("td");
+            tdAlvo.textContent = (item.alvo ?? 0).toFixed(3);
+            tr.appendChild(tdAlvo);
+
+            const tdGanho = document.createElement("td");
+            tdGanho.textContent = (item.ganho_pct ?? 0).toFixed(2) + " %";
+            if (item.ganho_pct >= 0) tdGanho.className = "verde";
+            else tdGanho.className = "vermelho";
+            tr.appendChild(tdGanho);
+
+            const tdZona = document.createElement("td");
+            tdZona.textContent = item.zona || "-";
+            if (item.zona === "VERDE") tdZona.className = "verde";
+            else if (item.zona === "VERMELHA") tdZona.className = "vermelho";
+            else tdZona.className = "amarelo";
+            tr.appendChild(tdZona);
+
+            const tdRisco = document.createElement("td");
+            tdRisco.textContent = item.risco || "-";
+            if (item.risco === "BAIXO") tdRisco.className = "verde";
+            else if (item.risco === "ALTO") tdRisco.className = "vermelho";
+            tr.appendChild(tdRisco);
+
+            const tdPrioridade = document.createElement("td");
+            tdPrioridade.textContent = item.prioridade || "-";
+            if (item.prioridade === "ALTA") tdPrioridade.className = "verde";
+            else if (item.prioridade === "MÉDIA") tdPrioridade.className = "amarelo";
+            else if (item.prioridade === "NÃO OPERAR") tdPrioridade.className = "vermelho";
+            tr.appendChild(tdPrioridade);
+
+            const tdData = document.createElement("td");
+            tdData.textContent = item.data || "-";
+            tr.appendChild(tdData);
+
+            const tdHora = document.createElement("td");
+            tdHora.textContent = item.hora || "-";
+            tr.appendChild(tdHora);
+
+            corpo.appendChild(tr);
+          });
+        }
+
+        if (ultima) {
+          info.textContent = "Atualizado via /api/mfe – Último registro: " + ultima;
+        } else {
+          info.textContent = "Atualizado via /api/mfe.";
+        }
+
+        statusApi.textContent = "• Automação conectada";
+        statusApi.style.backgroundColor = "#004d26";
+        statusApi.style.color = "#a6ffb0";
+
       } catch (e) {
-        console.error(e);
-        nota.textContent =
-          "Falha ao ler /api/mfe. Verifique se o servidor está rodando.";
-        atualizarStatus("Erro ao ler automação");
+        corpo.innerHTML = "";
+        const tr = document.createElement("tr");
+        const td = document.createElement("td");
+        td.colSpan = 10;
+        td.className = "vermelho";
+        td.textContent = "Erro ao carregar /api/mfe. Verifique o serviço do painel.";
+        tr.appendChild(td);
+        corpo.appendChild(tr);
+
+        info.textContent = "Falha ao atualizar via /api/mfe.";
+        statusApi.textContent = "• Automação desconectada";
+        statusApi.style.backgroundColor = "#661111";
+        statusApi.style.color = "#ffcccc";
       }
     }
 
-    carregarDados();
-    setInterval(carregarDados, 60000); // 60s para teste
+    // primeira carga + atualização a cada 60s (teste)
+    carregarPainel();
+    setInterval(carregarPainel, 60000);
   </script>
 </body>
 </html>
