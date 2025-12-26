@@ -1,10 +1,12 @@
-# dados/gerados
+# gerados / dados
 entrada.json
+precos_cache.json
 *.tmp
 *.log
 
-# backups que você vem criando
-*.bkp_*
+# backups
+*.bak*
+*.bkp*
 backup_*/
 
 # node
